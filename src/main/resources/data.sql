@@ -61,6 +61,18 @@ insert into addresses (street, city, zip_code, country, location_name)
 select 'Slottskogsvägen', 'Göteborg', '413 08', 'Sweden', 'Slottsskogen'
 where not exists (select 1 from addresses where location_name = 'Slottsskogen');
 
+insert into addresses (street, city, zip_code, country, location_name)
+select 'Kungsportsavenyen 10', 'Göteborg', '411 36', 'Sweden', 'Kungsparken'
+where not exists (select 1 from addresses where location_name = 'Kungsparken');
+
+insert into addresses (street, city, zip_code, country, location_name)
+select 'Ringön 4', 'Göteborg', '418 34', 'Sweden', 'Älvsborgsbron'
+where not exists (select 1 from addresses where location_name = 'Älvsborgsbron');
+
+insert into addresses (street, city, zip_code, country, location_name)
+select 'Södra Vägen 50', 'Göteborg', '412 54', 'Sweden', 'Universeum'
+where not exists (select 1 from addresses where location_name = 'Universeum');
+
 -- Seed Events
 insert into events (title, description, date, address_id)
 select 'Gothenburg Tech Meetup', 'A gathering for tech enthusiasts in Gothenburg to discuss the latest trends in software development and AI.', '2024-06-15T18:00:00.000Z', (select id from addresses where location_name = 'Lindholmen Science Park')
@@ -145,4 +157,68 @@ ON CONFLICT (description, event_id) DO NOTHING;
 
 insert into tasks (description, completed, due_date, assigned_to_id, event_id)
 values ('Buy midsummer flowers', false, '2024-06-20T16:00:00.000Z', (select id from users where username = 'testuser'), (select id from events where title = 'Midsummer Workshop'))
+ON CONFLICT (description, event_id) DO NOTHING;
+
+-- Seed 2026 Events
+insert into events (title, description, date, address_id)
+select 'Gothenburg Cloud Summit 2026', 'A one-day summit focusing on cloud native architectures, Kubernetes, and observability.', '2026-03-10T09:00:00Z', (select id from addresses where location_name = 'Kungsparken')
+where not exists (select 1 from events where title = 'Gothenburg Cloud Summit 2026');
+
+insert into events (title, description, date, address_id)
+select 'Summer Hackathon 2026', '48-hour hackathon for students and professionals with mentorship and prizes.', '2026-07-05T10:00:00Z', (select id from addresses where location_name = 'Universeum')
+where not exists (select 1 from events where title = 'Summer Hackathon 2026');
+
+insert into events (title, description, date, address_id)
+select 'Winter AI Meetup 2026', 'Evening talks and networking on applied AI and ML in industry.', '2026-12-02T18:00:00Z', (select id from addresses where location_name = 'Älvsborgsbron')
+where not exists (select 1 from events where title = 'Winter AI Meetup 2026');
+
+insert into event_organizers (event_id, user_id)
+select (select id from events where title = 'Gothenburg Cloud Summit 2026'), (select id from users where username = 'testuser')
+where exists (select 1 from events where title = 'Gothenburg Cloud Summit 2026')
+  and exists (select 1 from users where username = 'testuser')
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+insert into event_organizers (event_id, user_id)
+select (select id from events where title = 'Summer Hackathon 2026'), (select id from users where username = 'user')
+where exists (select 1 from events where title = 'Summer Hackathon 2026')
+  and exists (select 1 from users where username = 'user')
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+insert into event_organizers (event_id, user_id)
+select (select id from events where title = 'Winter AI Meetup 2026'), (select id from users where username = 'sven_goteborg')
+where exists (select 1 from events where title = 'Winter AI Meetup 2026')
+  and exists (select 1 from users where username = 'sven_goteborg')
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+insert into event_members (event_id, user_id)
+values ((select id from events where title = 'Gothenburg Cloud Summit 2026'), (select id from users where username = 'sven_goteborg'))
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+insert into event_members (event_id, user_id)
+values ((select id from events where title = 'Gothenburg Cloud Summit 2026'), (select id from users where username = 'karin_k'))
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+insert into event_members (event_id, user_id)
+values ((select id from events where title = 'Summer Hackathon 2026'), (select id from users where username = 'olof_p'))
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+insert into event_members (event_id, user_id)
+values ((select id from events where title = 'Summer Hackathon 2026'), (select id from users where username = 'testuser'))
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+insert into event_members (event_id, user_id)
+values ((select id from events where title = 'Winter AI Meetup 2026'), (select id from users where username = 'karin_k'))
+ON CONFLICT (event_id, user_id) DO NOTHING;
+
+-- Seed Tasks for 2026 events (assigned to existing users)
+insert into tasks (description, completed, due_date, assigned_to_id, event_id)
+values ('Finalize speaker lineup', false, '2026-02-25T12:00:00Z', (select id from users where username = 'testuser'), (select id from events where title = 'Gothenburg Cloud Summit 2026'))
+ON CONFLICT (description, event_id) DO NOTHING;
+
+insert into tasks (description, completed, due_date, assigned_to_id, event_id)
+values ('Prepare hackathon kit and swag', false, '2026-06-20T17:00:00Z', (select id from users where username = 'user'), (select id from events where title = 'Summer Hackathon 2026'))
+ON CONFLICT (description, event_id) DO NOTHING;
+
+insert into tasks (description, completed, due_date, assigned_to_id, event_id)
+values ('Book venue and AV for Winter AI Meetup', false, '2026-11-15T10:00:00Z', (select id from users where username = 'sven_goteborg'), (select id from events where title = 'Winter AI Meetup 2026'))
 ON CONFLICT (description, event_id) DO NOTHING;
