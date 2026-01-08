@@ -1,7 +1,14 @@
 package com.example.events_planner.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -23,7 +30,7 @@ public class Task {
 
     @ManyToOne
     @JoinColumn(name = "assigned_to_id")
-    private UserAccount assignedTo;
+    private User assignedTo;
 
     @ManyToOne
     @JoinColumn(name = "event_id")
@@ -45,8 +52,8 @@ public class Task {
     public void setCompleted(boolean completed) { this.completed = completed; }
     public OffsetDateTime getDueDate() { return dueDate; }
     public void setDueDate(OffsetDateTime dueDate) { this.dueDate = dueDate; }
-    public UserAccount getAssignedTo() { return assignedTo; }
-    public void setAssignedTo(UserAccount assignedTo) { this.assignedTo = assignedTo; }
+    public User getAssignedTo() { return assignedTo; }
+    public void setAssignedTo(User assignedTo) { this.assignedTo = assignedTo; }
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
     public OffsetDateTime getCreatedAt() { return createdAt; }

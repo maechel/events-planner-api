@@ -1,9 +1,12 @@
 package com.example.events_planner.service;
 
-import com.example.events_planner.entity.*;
-import com.example.events_planner.repository.*;
-import com.example.events_planner.dto.*;
+import com.example.events_planner.dto.UserAdminRequest;
+import com.example.events_planner.dto.UserDetailDTO;
+import com.example.events_planner.dto.UserSummaryDTO;
+import com.example.events_planner.entity.User;
 import com.example.events_planner.exception.ResourceNotFoundException;
+import com.example.events_planner.mapper.UserMapper;
+import com.example.events_planner.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,13 +24,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
-    public UserAccount getCurrentUser() {
+    public User getCurrentUser() {
         String username = Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
@@ -35,21 +40,39 @@ public class UserService {
 
     public List<UserDetailDTO> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(this::convertToDetailDTO)
+                .map(userMapper::toDetailDTO)
                 .toList();
     }
 
     public List<UserSummaryDTO> getAllUserSummaries() {
         return userRepository.findAll().stream()
-                .map(user -> new UserSummaryDTO(user.getId(), user.getUsername(), user.getAvatar()))
+                .map(userMapper::toSummaryDTO)
                 .toList();
     }
 
     public Optional<UserDetailDTO> getUserById(UUID id) {
-        return userRepository.findById(id).map(this::convertToDetailDTO);
+        return userRepository.findById(id).map(userMapper::toDetailDTO);
     }
 
     public UserDetailDTO createUser(UserAdminRequest request) {
+        validateCreateUserRequest(request);
+
+        User user = new User();
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setEnabled(request.enabled() != null ? request.enabled() : true);
+        user.setAccountNonLocked(request.accountNonLocked() != null ? request.accountNonLocked() : true);
+        user.setAvatar(request.avatar());
+        user.setAuthorities(request.authorities());
+        
+        user.setCreatedAt(OffsetDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
+        
+        return userMapper.toDetailDTO(userRepository.save(user));
+    }
+
+    private void validateCreateUserRequest(UserAdminRequest request) {
         if (request.username() == null || request.username().isEmpty()) {
             throw new IllegalArgumentException("Username is required");
         }
@@ -62,24 +85,10 @@ public class UserService {
         if (request.password() == null || request.password().isEmpty()) {
             throw new IllegalArgumentException("Password is required");
         }
-
-        UserAccount user = new UserAccount();
-        user.setUsername(request.username());
-        user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password()));
-        user.setEnabled(request.enabled() != null ? request.enabled() : true);
-        user.setAccountNonLocked(request.accountNonLocked() != null ? request.accountNonLocked() : true);
-        user.setAvatar(request.avatar());
-        user.setAuthorities(request.authorities());
-        
-        user.setCreatedAt(OffsetDateTime.now());
-        user.setUpdatedAt(OffsetDateTime.now());
-        
-        return convertToDetailDTO(userRepository.save(user));
     }
 
     public UserDetailDTO updateUser(UUID id, UserAdminRequest request) {
-        UserAccount user = userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
 
         user.setUsername(request.username());
@@ -100,26 +109,10 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(request.password()));
         }
 
-        return convertToDetailDTO(userRepository.save(user));
+        return userMapper.toDetailDTO(userRepository.save(user));
     }
 
     public void deleteUser(UUID id) {
         userRepository.deleteById(id);
-    }
-
-    private UserDetailDTO convertToDetailDTO(UserAccount user) {
-        return new UserDetailDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.isEnabled(),
-                user.isAccountNonLocked(),
-                user.getAvatar(),
-                user.getFailedLoginAttempts(),
-                user.getLastLogin(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getAuthorities()
-        );
     }
 }

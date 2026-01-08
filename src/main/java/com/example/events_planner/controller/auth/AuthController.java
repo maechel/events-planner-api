@@ -1,6 +1,6 @@
 package com.example.events_planner.controller.auth;
 
-import com.example.events_planner.entity.UserAccount;
+import com.example.events_planner.entity.User;
 import com.example.events_planner.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,7 +45,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         try {
             UsernamePasswordAuthenticationToken token = UsernamePasswordAuthenticationToken.unauthenticated(
                     loginRequest.username(), loginRequest.password());
@@ -84,7 +84,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already exists"));
         }
 
-        UserAccount user = new UserAccount();
+        User user = new User();
         user.setUsername(registerRequest.username());
         user.setEmail(registerRequest.email());
         user.setPassword(passwordEncoder.encode(registerRequest.password()));
@@ -95,11 +95,14 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "User registered successfully"));
     }
 
-    public record LoginRequest(String username, String password) {}
+    public record LoginRequest(
+            @NotBlank(message = "Username is required") String username,
+            @NotBlank(message = "Password is required") String password
+    ) {}
 
     public record RegisterRequest(
-            @NotBlank @Size(min = 3, max = 50) String username,
-            @NotBlank @Email String email,
-            @NotBlank @Size(min = 6) String password
+            @NotBlank(message = "Username is required") @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters") String username,
+            @NotBlank(message = "Email is required") @Email(message = "Invalid email format") String email,
+            @NotBlank(message = "Password is required") @Size(min = 6, message = "Password must be at least 6 characters") String password
     ) {}
 }

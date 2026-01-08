@@ -1,7 +1,18 @@
 package com.example.events_planner.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -33,7 +44,7 @@ public class Event {
         joinColumns = @JoinColumn(name = "event_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<UserAccount> organizers = new HashSet<>();
+    private Set<User> organizers = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -41,7 +52,7 @@ public class Event {
         joinColumns = @JoinColumn(name = "event_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<UserAccount> members = new HashSet<>();
+    private Set<User> members = new HashSet<>();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -64,12 +75,12 @@ public class Event {
     public void setDate(OffsetDateTime date) { this.date = date; }
     public Address getAddress() { return address; }
     public void setAddress(Address address) { this.address = address; }
-    public Set<UserAccount> getOrganizers() { return organizers; }
+    public Set<User> getOrganizers() { return organizers; }
     @SuppressWarnings("unused")
-    public void setOrganizers(Set<UserAccount> organizers) { this.organizers = organizers; }
-    public Set<UserAccount> getMembers() { return members; }
+    public void setOrganizers(Set<User> organizers) { this.organizers = organizers; }
+    public Set<User> getMembers() { return members; }
     @SuppressWarnings("unused")
-    public void setMembers(Set<UserAccount> members) { this.members = members; }
+    public void setMembers(Set<User> members) { this.members = members; }
     public Set<Task> getTasks() { return tasks; }
     @SuppressWarnings("unused")
     public void setTasks(Set<Task> tasks) { this.tasks = tasks; }

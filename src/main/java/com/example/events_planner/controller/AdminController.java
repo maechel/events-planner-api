@@ -1,10 +1,21 @@
 package com.example.events_planner.controller;
 
-import com.example.events_planner.dto.*;
+import com.example.events_planner.dto.AdminStatsDTO;
+import com.example.events_planner.dto.UserAdminRequest;
+import com.example.events_planner.dto.UserDetailDTO;
 import com.example.events_planner.exception.ResourceNotFoundException;
-import com.example.events_planner.service.*;
+import com.example.events_planner.service.StatisticsService;
+import com.example.events_planner.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -39,12 +50,12 @@ public class AdminController {
     }
 
     @PostMapping("/users")
-    public UserDetailDTO createUser(@RequestBody UserAdminRequest user) {
+    public UserDetailDTO createUser(@Valid @RequestBody UserAdminRequest user) {
         return userService.createUser(user);
     }
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<UserDetailDTO> updateUser(@PathVariable("id") UUID id, @RequestBody UserAdminRequest userDetails) {
+    public ResponseEntity<UserDetailDTO> updateUser(@PathVariable("id") UUID id, @Valid @RequestBody UserAdminRequest userDetails) {
         return ResponseEntity.ok(userService.updateUser(id, userDetails));
     }
 

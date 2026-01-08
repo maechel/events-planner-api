@@ -8,5 +8,7 @@ public record AddressDTO(
     String city,
     String zipCode,
     String country,
-    String locationName
+    String locationName,
+    Double latitude,
+    Double longitude
 ) {}

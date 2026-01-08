@@ -1,10 +1,21 @@
 package com.example.events_planner.controller;
 
-import com.example.events_planner.dto.*;
+import com.example.events_planner.dto.EventDetailDTO;
+import com.example.events_planner.dto.EventRequestDTO;
+import com.example.events_planner.dto.EventSummaryDTO;
+import com.example.events_planner.dto.UserSummaryDTO;
 import com.example.events_planner.exception.ResourceNotFoundException;
 import com.example.events_planner.service.EventService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Set;
@@ -33,12 +44,12 @@ public class EventController {
     }
 
     @PostMapping
-    public EventDetailDTO createEvent(@RequestBody EventRequestDTO event) {
+    public EventDetailDTO createEvent(@Valid @RequestBody EventRequestDTO event) {
         return eventService.createEvent(event);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EventDetailDTO> updateEvent(@PathVariable("id") UUID id, @RequestBody EventRequestDTO eventDetails) {
+    public ResponseEntity<EventDetailDTO> updateEvent(@PathVariable("id") UUID id, @Valid @RequestBody EventRequestDTO eventDetails) {
         return ResponseEntity.ok(eventService.updateEvent(id, eventDetails));
     }
 

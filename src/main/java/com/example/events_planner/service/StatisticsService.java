@@ -1,7 +1,8 @@
 package com.example.events_planner.service;
 
-import com.example.events_planner.entity.*;
-import com.example.events_planner.repository.*;
+import com.example.events_planner.repository.EventRepository;
+import com.example.events_planner.repository.TaskRepository;
+import com.example.events_planner.repository.UserRepository;
 import com.example.events_planner.dto.AdminStatsDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
