@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -88,7 +89,9 @@ public class AuthController {
         user.setUsername(registerRequest.username());
         user.setEmail(registerRequest.email());
         user.setPassword(passwordEncoder.encode(registerRequest.password()));
-        user.setAuthorities(java.util.Set.of("ROLE_USER"));
+        user.setAuthorities(Set.of("ROLE_USER"));
+        user.setCreatedAt(OffsetDateTime.now());
+        user.setUpdatedAt(OffsetDateTime.now());
 
         userRepository.save(user);
 

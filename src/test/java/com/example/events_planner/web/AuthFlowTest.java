@@ -1,9 +1,13 @@
 package com.example.events_planner.web;
 
 import com.example.events_planner.controller.auth.AuthController;
+import com.example.events_planner.entity.User;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -14,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class AuthFlowTest extends BaseWebTest {
 
     @BeforeEach
@@ -45,11 +50,11 @@ class AuthFlowTest extends BaseWebTest {
                 .andReturn();
 
         // Check if session is established by calling /api/me
-        jakarta.servlet.http.HttpSession session = result.getRequest().getSession(false);
+        HttpSession session = result.getRequest().getSession(false);
         assertThat(session).isNotNull();
 
         mockMvc.perform(get("/api/me")
-                .session((org.springframework.mock.web.MockHttpSession) session))
+                .session((MockHttpSession) session))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.authenticated").value(true))
                 .andExpect(jsonPath("$.username").value("user"));
@@ -82,9 +87,9 @@ class AuthFlowTest extends BaseWebTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        jakarta.servlet.http.HttpSession session = loginResult.getRequest().getSession(false);
+        HttpSession session = loginResult.getRequest().getSession(false);
         assertThat(session).isNotNull();
-        org.springframework.mock.web.MockHttpSession mockSession = (org.springframework.mock.web.MockHttpSession) session;
+        MockHttpSession mockSession = (MockHttpSession) session;
 
         // 2. Verify we are logged in
         mockMvc.perform(get("/api/me").session(mockSession))
@@ -105,7 +110,7 @@ class AuthFlowTest extends BaseWebTest {
     @Test
     void failedLoginShouldIncrementCounter() throws Exception {
         String username = "user";
-        com.example.events_planner.entity.User userBefore = userRepository.findByUsername(username)
+        User userBefore = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AssertionError("User not found: " + username));
         int initialAttempts = userBefore.getFailedLoginAttempts();
 
@@ -116,7 +121,7 @@ class AuthFlowTest extends BaseWebTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
 
-        com.example.events_planner.entity.User userAfter = userRepository.findByUsername(username)
+        User userAfter = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AssertionError("User not found: " + username));
         int attemptsAfterFailure = userAfter.getFailedLoginAttempts();
         assertThat(attemptsAfterFailure).isEqualTo(initialAttempts + 1);
@@ -138,7 +143,7 @@ class AuthFlowTest extends BaseWebTest {
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk());
 
-        com.example.events_planner.entity.User userAfter = userRepository.findByUsername(username)
+        User userAfter = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AssertionError("User not found: " + username));
         int attemptsAfterSuccess = userAfter.getFailedLoginAttempts();
         assertThat(attemptsAfterSuccess).isEqualTo(0);

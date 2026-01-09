@@ -11,6 +11,8 @@ import com.example.events_planner.mapper.TaskMapper;
 import com.example.events_planner.repository.EventRepository;
 import com.example.events_planner.repository.TaskRepository;
 import com.example.events_planner.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,8 @@ import java.util.UUID;
 @Service
 @Transactional
 public class TaskService {
+
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
     private final TaskRepository taskRepository;
     private final EventRepository eventRepository;
@@ -61,6 +65,7 @@ public class TaskService {
     }
 
     public TaskDetailDTO createTask(TaskRequestDTO request) {
+        log.info("Creating new task: {}", request.description());
         Task task = new Task();
         task.setDescription(request.description());
         task.setDueDate(request.dueDate());

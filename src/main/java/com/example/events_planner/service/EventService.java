@@ -14,6 +14,8 @@ import com.example.events_planner.mapper.UserMapper;
 import com.example.events_planner.repository.EventRepository;
 import com.example.events_planner.repository.TaskRepository;
 import com.example.events_planner.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class EventService {
+
+    private static final Logger log = LoggerFactory.getLogger(EventService.class);
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
@@ -47,6 +51,7 @@ public class EventService {
 
     public List<EventSummaryDTO> getAllEvents() {
         User currentUser = userService.getCurrentUser();
+        log.debug("Fetching all events for user: {}", currentUser.getUsername());
         List<Event> events;
         if (currentUser.getAuthorities().contains("ROLE_ADMIN")) {
             events = eventRepository.findAll();
@@ -64,14 +69,19 @@ public class EventService {
     }
 
     public EventDetailDTO createEvent(EventRequestDTO request) {
+        log.info("Creating new event with title: {}", request.title());
         Event event = new Event();
         updateEventFields(event, request);
         return eventMapper.toDetailDTO(eventRepository.save(event));
     }
 
     public EventDetailDTO updateEvent(UUID id, EventRequestDTO request) {
+        log.info("Updating event with id: {}", id);
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Event not found with id " + id));
+                .orElseThrow(() -> {
+                    log.error("Event update failed: Event not found with id {}", id);
+                    return new ResourceNotFoundException("Event not found with id " + id);
+                });
 
         if (request.date() != null) {
             validateEventDate(id, request.date());

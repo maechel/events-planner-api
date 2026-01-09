@@ -4,6 +4,7 @@ import com.example.events_planner.controller.auth.AuthController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.http.MediaType;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,19 +12,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class RegistrationFlowTest extends BaseWebTest {
 
     @BeforeEach
     void setUp() {
         setupMockMvc();
-        userRepository.findByUsername("newuser").ifPresent(userRepository::delete);
+        userRepository.findByUsername("newuser").ifPresent(user -> {
+            userRepository.delete(user);
+            userRepository.flush();
+        });
     }
 
     @Test
     void shouldRegisterNewUser() throws Exception {
+        String username = "newuser_" + java.util.UUID.randomUUID();
         AuthController.RegisterRequest registerRequest = new AuthController.RegisterRequest(
-                "newuser",
-                "newuser@example.com",
+                username,
+                username + "@example.com",
                 "password123"
         );
 
@@ -36,6 +42,7 @@ public class RegistrationFlowTest extends BaseWebTest {
 
     @Test
     void shouldNotRegisterUserWithExistingUsername() throws Exception {
+        // 'user' is already in data.sql
         AuthController.RegisterRequest registerRequest = new AuthController.RegisterRequest(
                 "user",
                 "other@example.com",
@@ -67,9 +74,10 @@ public class RegistrationFlowTest extends BaseWebTest {
 
     @Test
     void shouldRegisterAndThenLogin() throws Exception {
+        String username = "loginuser_" + java.util.UUID.randomUUID();
         AuthController.RegisterRequest registerRequest = new AuthController.RegisterRequest(
-                "newuser",
-                "newuser@example.com",
+                username,
+                username + "@example.com",
                 "password123"
         );
 
@@ -79,7 +87,7 @@ public class RegistrationFlowTest extends BaseWebTest {
                 .andExpect(status().isCreated());
 
         AuthController.LoginRequest loginRequest = new AuthController.LoginRequest(
-                "newuser",
+                username,
                 "password123"
         );
 

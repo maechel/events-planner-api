@@ -12,12 +12,7 @@ spring:
     username: myuser # for local testing only
     password: secret # for local testing only
 
-  sql:
-    init:
-      mode: always
-
   jpa:
-    defer-datasource-initialization: true
     show-sql: true
     properties:
       hibernate:
@@ -49,6 +44,6 @@ management:
 logging:
   level:
     root: INFO
-    com.example.tasks_api: DEBUG
+    com.example.events_planner: DEBUG
     org.springframework.web: INFO
     org.flywaydb: DEBUG
